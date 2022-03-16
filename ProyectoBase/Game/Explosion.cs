@@ -25,6 +25,7 @@ namespace Game
             Transform.Position = Position;
             Transform.Scale = new Vector2(0.05f, 0.05f);
             Render = new Renderer(explosionAnimation.CurrentFrame, Transform);
+            Collider.OnCollition += OnCollition;
         }
         public override void Update()
         {
@@ -52,19 +53,16 @@ namespace Game
                         isActive = false;
                     }
                 }
-                foreach (GameObject gameObject in Level.ActiveGameObjects.ToList())
-                {
-                    GameObject gameObjectColltion = Collider.CheckCollitions();
-                    if (gameObjectColltion != null)
-                    {
-                        if (gameObjectColltion.Collider.Layer == "enemy" || gameObjectColltion.Collider.Layer == "player" || gameObjectColltion.Collider.Layer == "patrol")
-                        {
-                            IDamageable damageableObject = (IDamageable)gameObjectColltion;
-                            damageableObject.GetDamage(damage);
-                        }
-
-                    }
-                }
+                Collider.CheckCollitions();
+            }
+        }
+        public void OnCollition(GameObject gameObjectCollition)
+        {
+            //Damage everything inside his radius
+            if (gameObjectCollition.Collider.Layer == "enemy" || gameObjectCollition.Collider.Layer == "player" || gameObjectCollition.Collider.Layer == "patrol")
+            {
+                IDamageable damageableObject = (IDamageable)gameObjectCollition;
+                damageableObject.GetDamage(damage);
             }
         }
 

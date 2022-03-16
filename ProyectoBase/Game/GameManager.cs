@@ -38,8 +38,6 @@ namespace Game
                 return instance;
             }
         }
-
-        public GameState CurrentGameState { get; private set; }
         public void Initialize()
         {
             winScreen = new WinScreen("Png/Screens/Win.png");

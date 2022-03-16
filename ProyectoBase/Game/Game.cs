@@ -156,9 +156,9 @@ namespace Game
     {
         private struct TextureData
         {
-            public int id;
-            public int width;
-            public int height;
+           public int id;
+           public int width;
+           public int height;
         }
 
         public int Id { get; private set; }

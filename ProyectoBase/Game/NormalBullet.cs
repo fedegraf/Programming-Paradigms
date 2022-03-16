@@ -20,13 +20,16 @@ namespace Game
         public FactoryBullets.bullets Type { get => type; set => type = FactoryBullets.bullets.explosive; }
         public bool IsFacingRight { set => isFacingRight = value; }
 
-        public NormalBullet(float speed, int damage, bool right,
-            Transform transform, Renderer render, Collider collider) : base(transform, render, collider)
+        public NormalBullet(float speed, int damage, bool right, Vector2 position, float rotation, Vector2 scale)
+        : base(position, rotation, scale)
         {
             Speed = speed;
             Damage = damage;
             type = FactoryBullets.bullets.normal;
             IsFacingRight = right;
+            Collider.Layer = "bullet";
+            Render.Texture = Engine.GetTexture("Textures/Levels/explosive_bullet.png");
+            Collider.OnCollition += OnCollition;
         }
         public NormalBullet() : base()
         {
@@ -38,6 +41,7 @@ namespace Game
             Speed = 300f;
             Damage = 50;
             IsFacingRight = true;
+            Collider.OnCollition += OnCollition;
         }
 
         public override void Update()
@@ -55,35 +59,7 @@ namespace Game
             {
                 Deactivate();
             }
-                foreach (GameObject gameObject in Level.ActiveGameObjects.ToList())
-                {
-                    GameObject gameObjectColltion = Collider.CheckCollitions();
-                   if (gameObjectColltion != null)
-                    {
-                    switch (gameObjectColltion.Collider.Layer)
-                    {
-                        case "player":
-                            PlayerController player = (PlayerController)gameObjectColltion;
-                            player.GetDamage(damage);
-                            Deactivate();
-                            break;
-                        case "enemy":
-                            EnemyController enemy = (EnemyController)gameObjectColltion;
-                            enemy.GetDamage(damage);
-                            Deactivate();
-                            break;
-                        case "patrol":
-                            PatrolEnemy patrol = (PatrolEnemy)gameObjectColltion;
-                            patrol.GetDamage(damage);
-                            Deactivate();
-                            break;
-                        default:
-                            Deactivate();
-                            break;
-                    }
-
-                }
-            }
+            Collider.CheckCollitions();
         }
         public void Deactivate()
         {
@@ -91,15 +67,49 @@ namespace Game
             Level.poolOfNormalBullets.Recicle(this);
             OnDeactivate?.Invoke(this);
         }
+        public void OnCollition(GameObject gameObjectCollition)
+        {
+            switch (gameObjectCollition.Collider.Layer)
+            {
+                case "player":
+                    if (Collider.Layer == "EnemyBullet")
+                    {
+                        PlayerController player = (PlayerController)gameObjectCollition;
+                        player.GetDamage(damage);
+                        Deactivate();
+                    }
+                    break;
+                case "enemy":
+                    if (Collider.Layer == "playerBullet")
+                    {
+                        EnemyController enemy = (EnemyController)gameObjectCollition;
+                        enemy.GetDamage(damage);
+                        Deactivate();
+                    }
+                    break;
+                case "patrol":
+                    if (Collider.Layer == "playerBullet")
+                    {
+                        PatrolEnemy patrol = (PatrolEnemy)gameObjectCollition;
+                        patrol.GetDamage(damage);
+                        Deactivate();
+                    }
+                    break;
+                default:
+                    Deactivate();
+                    break;
+            }
+        }
         public void Instantiate(Vector2 Position)
         {
         }
-        public void Activate(Vector2 Position, bool right)
+        public void Activate(Vector2 Position, bool right, string Layer)
         {
             Transform.Position = Position;
             Render.Texture = right ? Engine.GetTexture("Textures/Levels/BulletRight.png") 
                : Engine.GetTexture("Textures/Levels/BulletLeft.png");
             isFacingRight = right;
+            Collider.Layer = Layer;
         }
 
     }

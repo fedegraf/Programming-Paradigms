@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Game
 {
-    public class PatrolEnemy : GameObject, IDamageable
+    public class PatrolEnemy : GameObject, IDamageable, IEnemy
     {
         private List<Animation> animations = new List<Animation>();
         private Animation currentAnimation;
         private static float ShootingCooldown, CoolingCurrentTime;
-        private int currentHealth, maxHealth;
+        private int currentHealth, maxHealth = 250;
         private Vector2 speed;
         private bool isFacingRight;
         private float ShootAnimationLenght = 0.8f;
@@ -25,8 +25,8 @@ namespace Game
         public Vector2 PointB { get => pointB; set => pointB = value; }
         public bool isDestroyed => throw new NotImplementedException();
 
-        public PatrolEnemy (Vector2 speed, bool right, Vector2 Origin, Vector2 Destiny,
-            Transform transform, Renderer render, Collider collider) : base(transform, render, collider)
+        public PatrolEnemy (Vector2 speed, bool right, Vector2 Origin, Vector2 Destiny, Vector2 position, float rotation, Vector2 scale)
+        : base(position, rotation, scale, Engine.GetTexture("Textures/NormalEnemy/Right/Idle Animation/Idle_1.png"), "patrol")
         {
             CreateNormalEnemyAnimation();
             Engine.Debug("Creo animaciones");
@@ -38,9 +38,10 @@ namespace Game
             Engine.Debug("Seteo animacion correcta");
             ShootingCooldown = 4.5f;
             CoolingCurrentTime = 0f;
-            collider.ThisGameObject = this;
             pointA = Origin;
             pointB = Destiny;
+            Render.Texture = currentAnimation.CurrentFrame;
+            Collider.Layer = "enemy";
         }
 
         event Action<IDamageable> IDamageable.OnDestroy
@@ -101,7 +102,7 @@ namespace Game
                 currentAnimation = isFacingRight ? GetAnimation("ShootRightAnimation") : GetAnimation("ShootLeftAnimation");
                 currentAnimation.Play();
                 Render.Size = new Vector2(currentAnimation.CurrentFrame.Width * Transform.Scale.X, Render.Size.Y);
-                Level.InstantiateBullet(Transform.Position, Render.Size, isFacingRight, "normal");
+                Level.InstantiateBullet(Transform.Position, Render.Size, isFacingRight, "normal", "EnemyBullet");
                 CoolingCurrentTime = 0;
             }
         }

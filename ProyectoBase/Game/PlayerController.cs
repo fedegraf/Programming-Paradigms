@@ -38,19 +38,21 @@ namespace Game
         public int MaxHealth { get => maxHealth; set => maxHealth = value; }
         public FactoryBullets.bullets CurrentBullet { get => currentBullet; set => currentBullet = value; }
         public bool IsFacingRight { get => isFacingRight; private set => isFacingRight = value; }
-        public PlayerController(Vector2 speed,
-            Transform transform, Renderer render, Collider collider) : base (transform, render, collider)
+        public PlayerController(Vector2 speed, Vector2 position, float rotation, Vector2 scale, Texture texture)
+            : base(position, rotation, scale, texture, "player")
         {
             CreateAnimations();
             Speed = speed;
             currentHealth = MaxHealth;
             currentAnimation = GetAnimation("idleRightAnimation");
+            Render.Texture = currentAnimation.CurrentFrame;
             ShootingCooldown = 0.5f;
             CoolingCurrentTime = 0.6f;
             currentBullet = FactoryBullets.bullets.normal;
             isExplosiveWeaponAvailable = false;
             fuel = maxFuel;
-            collider.ThisGameObject = this;
+            Engine.Debug(Collider.Layer);
+            Collider.OnCollition += OnCollition;
         }
 
         private void CreateAnimations()
@@ -143,7 +145,7 @@ namespace Game
                 if (CoolingCurrentTime >= ShootingCooldown)
                 {
                     Engine.Debug("Dispara");
-                    Level.InstantiateBullet(Transform.Position, Render.Size, IsFacingRight, CurrentBullet.ToString());
+                    Level.InstantiateBullet(Transform.Position, Render.Size, IsFacingRight, CurrentBullet.ToString(), "playerBullet");
                     CoolingCurrentTime = 0;
                 }
             }
@@ -261,24 +263,23 @@ namespace Game
         }
         public void CheckColitions()
         {
-            foreach (GameObject gameObject in Level.ActiveGameObjects.ToList())
-            {
-                if (gameObject != this)
-                {
-                    GameObject gameObjectCollition = Collider.CheckCollitions();
-                    if (gameObjectCollition != null)
+            Collider.CheckCollitions();
+        }
+        public void OnCollition(GameObject gameobject)
+        {
+                    if (gameobject != null)
                     {
-                        switch (gameObjectCollition.Collider.Layer)
+                        switch (gameobject.Collider.Layer)
                         {
                             case "AmmoPickup":
                                 GetExplosiveAmmo();
-                                gameObjectCollition.isActive = false;
-                                gameObjectCollition.Transform.Position = new Vector2(-50, -50);
+                            gameobject.isActive = false;
+                            gameobject.Transform.Position = new Vector2(-50, -50);
                                 break;
                             case "Health":
                                 Healed();
-                                gameObjectCollition.isActive = false;
-                                gameObjectCollition.Transform.Position = new Vector2(-50, -50);
+                                gameobject.isActive = false;
+                                gameobject.Transform.Position = new Vector2(-50, -50);
                                 break;
                             case "Win Trigger":
                                 onWin?.Invoke();
@@ -288,7 +289,3 @@ namespace Game
                 }
             }
         }
-
-    }
-
-}

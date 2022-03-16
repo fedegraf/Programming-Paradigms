@@ -14,6 +14,7 @@ namespace Game
         private FactoryBullets.bullets type;
         private bool isFacingRight;
         private bool AlreadyDone = false;
+        Explosion explosion;
 
         public float Speed { get => speed; set => speed = value; }
         public int Damage { get => damage; set => damage = value; }
@@ -21,25 +22,20 @@ namespace Game
         public float CurrentCoolingTime { get => currentCoolingTime; private set => currentCoolingTime = value; }
         public FactoryBullets.bullets Type { get => type; set => type = FactoryBullets.bullets.explosive; }
         public bool IsFacingRight { set => isFacingRight = value; }
-        public ExplosiveBullet(float speed, int damage, bool Right,
-            Transform transform, Renderer render, Collider collider) : base(transform, render, collider)
+        public ExplosiveBullet(float speed, int damage, bool Right, Vector2 position, float rotation, Vector2 scale)
+            : base(position, rotation, scale, Engine.GetTexture("Textures/Levels/explosive_bullet.png"), "playerBullet")
         {
             Speed = speed;
             Damage = damage;
             type = FactoryBullets.bullets.explosive;
             IsFacingRight = Right;
-            collider.ThisGameObject = this;
+            Collider.OnCollition += OnCollition;
         }
         public ExplosiveBullet() : base()
         {
-            Collider = new Collider("bullet", this);
-            Transform = new Transform();
-            Transform.Scale = new Vector2(0.1f, 0.1f);
-            Render = new Renderer(Engine.GetTexture("Textures/Levels/ExplosiveBulletLeft.png"), Transform);
-            Type = FactoryBullets.bullets.explosive;
-            Speed = 200f;
-            Damage = 50;
-
+            type = FactoryBullets.bullets.explosive;
+            Transform.Scale = new Vector2 (0.1f, 0.1f);
+            Collider.OnCollition += OnCollition;
         }
 
         public override void Update()
@@ -52,20 +48,45 @@ namespace Game
             {
                 Transform.Position -= new Vector2(1, 0) * speed * Time.DeltaTime;
             }
-
+            //Deactivate Bullet if is out of screen
             if (Transform.Position.X < 0 || Transform.Position.X > Program.SCREEN_WIDHT)
             {
                 Deactivate();
             }
-            foreach (GameObject gameObject in Level.ActiveGameObjects.ToList())
             {
-                GameObject gameObjectColltion = Collider.CheckCollitions();
-                if (gameObjectColltion != null && !AlreadyDone)
+                Collider.CheckCollitions();
+            }
+
+        }
+
+        public void OnCollition(GameObject gameObjectCollition)
+        {
+            if (!AlreadyDone)
+            {
+                switch (gameObjectCollition.Collider.Layer)
                 {
-                    AlreadyDone = false;
-                    Explosion explosion = new Explosion(this.Transform.Position);
-                    Deactivate();
-                    Level.ActiveGameObjects.Add(explosion);
+                    //If the bullet collide with anything but the one who trigger it, create an explotion
+                    case "player":
+                        if (Collider.Layer != "playerBullet")
+                        {
+                            Engine.Debug("Case Player");
+                            CreateExplotion();
+                        }
+                        break;
+                    case "enemy":
+                        if (Collider.Layer != "EnemyBullet")
+                        {
+                            CreateExplotion();
+                        }
+                        break;
+                    case "patrol":
+                        if (Collider.Layer != "EnemyBullet")
+                        {
+                            CreateExplotion();
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
 
@@ -78,13 +99,26 @@ namespace Game
         }
         public void Instantiate(Vector2 Position)
         {        }
-        public void Activate(Vector2 Position, bool right)
+        public void Activate(Vector2 Position, bool right, String Layer)
         {
-            Engine.Debug("Bala activada");
             Transform.Position = Position;
             Render.Texture = right ? Engine.GetTexture("Textures/Levels/ExplosiveBulletRight.png") : 
                 Engine.GetTexture("Textures/Levels/ExplosiveBulletLeft.png");
             isFacingRight = right;
+            Collider.Layer = Layer;
+            Render.RealHeight = Render.Texture.Height;
+            Render.RealWidht =  Render.Texture.Width;
+            Render.Size = new Vector2(Render.RealWidht * Transform.Scale.X, Render.RealHeight * Transform.Scale.Y);
+            Render.OffSetX = Render.Size.X / 2;
+            Render.OffSetY = Render.Size.Y / 2;
+            speed = 100f;
+        }
+        public void CreateExplotion()
+        {
+            AlreadyDone = false;
+            explosion = new Explosion(this.Transform.Position);
+            Deactivate();
+            Level.ActiveGameObjects.Add(explosion);
         }
     }
 }

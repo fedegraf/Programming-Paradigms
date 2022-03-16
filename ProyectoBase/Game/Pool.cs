@@ -32,12 +32,6 @@ namespace Game
             used.Add(t);
             return t;
         }
-        public T Get(int posAt)
-        {
-            T t = unused.ElementAt(posAt);
-                used.Add(t);
-                return t;
-        }
         public void Recicle (T t)
         {
             used.Remove(t);

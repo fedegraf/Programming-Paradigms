@@ -24,18 +24,21 @@ namespace Game
         public GameManager.GameState Id => GameManager.GameState.Level;
         public void Initialize()
         {
+            //Create Player
             Vector2 speedPlayer = new Vector2(100f, 0f);
-            Transform transformPlayer = new Transform(new Vector2(50, 50), 0, new Vector2(0.15f, 0.15f));
-            Renderer renderPlayer = new Renderer(Engine.GetTexture("Textures/Character/Right/idle_1.png"), transformPlayer);
-            Collider colliderPlayer = new Collider("player", player);
-            player = new PlayerController(speedPlayer, transformPlayer, renderPlayer, colliderPlayer);
+            Vector2 PlayerPosition = new Vector2(50, 50);
+            Vector2 PlayerScale = new Vector2(0.15f, 0.15f);
+            player = new PlayerController(speedPlayer, PlayerPosition, 0, PlayerScale, Engine.GetTexture("Textures/Character/Left/idle_1.png"));
+            //Create UI
             UserInterface = new Interface();
-            LoadLevel3();
+            //Load first level
+            LoadLevel1();
             player.onDie += GameOverHandler;
             player.onWin += WinHandler;
         }
         public void Update()
         {
+            //Update every active Game Object
             foreach (GameObject gameObject in ActiveGameObjects.ToList())
             {
                 if (gameObject.isActive)
@@ -66,23 +69,23 @@ namespace Game
             Engine.Draw(backgroundTexturePath, 0, 0, 0.75f, 0.75f);
             DrawTiles();
             foreach (GameObject gameObject in ActiveGameObjects)
-               {
-                       if (gameObject.isActive)
-                       {
-                           gameObject.Render.Render(gameObject.Transform);
-                       }
-               }
-                   foreach (NormalBullet bullet in poolOfNormalBullets.Used)
-                   {
-                       GameObject gameObject = (GameObject)bullet;
-                       gameObject.Render.Render(gameObject.Transform);
-                   }
-               
-                   foreach (ExplosiveBullet bullet in poolOfExplosiveBullets.Used)
-                   {
-                       GameObject gameObject = (GameObject)bullet;
-                       gameObject.Render.Render(gameObject.Transform);
-                   }
+            {
+                if (gameObject.isActive)
+                {
+                    gameObject.Render.Render(gameObject.Transform);
+                }
+            }
+            foreach (NormalBullet bullet in poolOfNormalBullets.Used)
+            {
+                GameObject gameObject = (GameObject)bullet;
+                gameObject.Render.Render(gameObject.Transform);
+            }
+
+            foreach (ExplosiveBullet bullet in poolOfExplosiveBullets.Used)
+            {
+                GameObject gameObject = (GameObject)bullet;
+                gameObject.Render.Render(gameObject.Transform);
+            }
             UserInterface.Render();
         }
         private static void DrawTiles()
@@ -103,24 +106,25 @@ namespace Game
                 PositionX += tile.Render.Size.X;
             }
         }
-        public static void InstantiateBullet(Vector2 position, Vector2 size, bool right, String type)
+        public static void InstantiateBullet(Vector2 position, Vector2 size, bool right, String type, String Layer)
         {
             if (type == FactoryBullets.bullets.normal.ToString())
             {
                 float spawnWidth = right ? (position.X + size.X / 2 + 15f) : (position.X - size.X / 2 - 15f);
                 NormalBullet MyBullet = poolOfNormalBullets.Get();
-                MyBullet.Activate(new Vector2(spawnWidth, position.Y), right);
+                MyBullet.Activate(new Vector2(spawnWidth, position.Y), right, Layer);
             }
             else if (type == FactoryBullets.bullets.explosive.ToString())
             {
                 float spawnWidth = right ? (position.X + size.X / 2 + 7.5f) : (position.X - size.X / 2 - 7.5f);
                 ExplosiveBullet MyBullet = poolOfExplosiveBullets.Get();
-                MyBullet.Activate(new Vector2(spawnWidth, position.Y), right);
+                MyBullet.Activate(new Vector2(spawnWidth, position.Y), right, Layer);
                 Engine.Debug("Disparo explosivo");
-            }    
+            }
         }
         public void WinHandler()
         {
+            //See what level is loaded and load next one or the win screen if last
             switch (currentLevel)
             {
                 case "Level 1":
@@ -149,10 +153,10 @@ namespace Game
             CreateTiles(4, 350, 250);
             CreateTiles(2, 450, 100);
             CreateTiles(4, 500, 500);
-            enemy = EnemyFactory.CreateEnemy(new Vector2(700, 300), false, enemy);
+            enemy = (EnemyController)EnemyFactory.CreateEnemy(EnemyFactory.Enemy.normal, new Vector2(700, 300), false, enemy, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0));
             ActiveGameObjects.Add(enemy);
             NormalEnemies.Add(enemy);
-            EnemyController enemy2 = EnemyFactory.CreateEnemy(new Vector2(100, 400), true, enemy);
+            EnemyController enemy2 = (EnemyController)EnemyFactory.CreateEnemy(EnemyFactory.Enemy.normal, new Vector2(100, 400), true, enemy, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0));
             ActiveGameObjects.Add(enemy2);
             NormalEnemies.Add(enemy2);
             HealthItem healthitem = new HealthItem();
@@ -180,13 +184,13 @@ namespace Game
             CreateTiles(5, 500, 50);
             CreateTiles(7, 220, 50);
             CreateTiles(6, 120, 00);
-            patrolenemy = EnemyFactory.CreatePatrolEnemy(new Vector2(100, 80), new Vector2(600, 80), new Vector2(150, 80), true, patrolenemy, new Vector2(50, 0));
+            patrolenemy = (PatrolEnemy) EnemyFactory.CreateEnemy(EnemyFactory.Enemy.patrol, new Vector2(100, 80), true, patrolenemy, new Vector2(150, 80), new Vector2(600, 80), new Vector2(50, 0));
             ActiveGameObjects.Add(patrolenemy);
             PatrolEnemies.Add(patrolenemy);
-            patrolenemy = EnemyFactory.CreatePatrolEnemy(new Vector2(50, 180), new Vector2(800, 180), new Vector2(500, 180), false, patrolenemy, new Vector2(150, 0));
+            patrolenemy = (PatrolEnemy) EnemyFactory.CreateEnemy(EnemyFactory.Enemy.patrol, new Vector2(50, 180), false, patrolenemy, new Vector2(500, 180), new Vector2(800, 180), new Vector2(150, 0));
             ActiveGameObjects.Add(patrolenemy);
             PatrolEnemies.Add(patrolenemy);
-            patrolenemy = EnemyFactory.CreatePatrolEnemy(new Vector2(500, 300), new Vector2(900, 300), new Vector2(500, 300), true, patrolenemy, new Vector2(100, 0));
+            patrolenemy = (PatrolEnemy)EnemyFactory.CreateEnemy(EnemyFactory.Enemy.patrol, new Vector2(500, 300), true, patrolenemy, new Vector2(500, 300), new Vector2(900, 300), new Vector2(100, 0));
             ActiveGameObjects.Add(patrolenemy);
             PatrolEnemies.Add(patrolenemy);
             WinTrigger winTrigger = new WinTrigger();
@@ -217,19 +221,19 @@ namespace Game
             WinTrigger winTrigger = new WinTrigger();
             winTrigger.Transform.Position = new Vector2(950, 440);
             ActiveGameObjects.Add(winTrigger);
-            patrolenemy = EnemyFactory.CreatePatrolEnemy(new Vector2(50, 180), new Vector2(800, 180), new Vector2(100, 180), false, patrolenemy, new Vector2 (120, 0));
+            patrolenemy = (PatrolEnemy)EnemyFactory.CreateEnemy(EnemyFactory.Enemy.patrol, new Vector2(50, 180), false, patrolenemy, new Vector2(100, 180), new Vector2(800, 180), new Vector2 (120, 0));
             ActiveGameObjects.Add(patrolenemy);
             PatrolEnemies.Add(patrolenemy);
-            patrolenemy = EnemyFactory.CreatePatrolEnemy(new Vector2(250, 300), new Vector2(750, 300), new Vector2(600, 300), true, patrolenemy, new Vector2(75, 0));
+            patrolenemy = (PatrolEnemy)EnemyFactory.CreateEnemy(EnemyFactory.Enemy.patrol, new Vector2(250, 300), true, patrolenemy, new Vector2(60, 300), new Vector2(750, 300),  new Vector2(75, 0));
             ActiveGameObjects.Add(patrolenemy);
             PatrolEnemies.Add(patrolenemy);
-            enemy = EnemyFactory.CreateEnemy(new Vector2(800, 300), false, enemy);
+            enemy = (EnemyController)EnemyFactory.CreateEnemy(EnemyFactory.Enemy.normal, new Vector2(800, 300), false, enemy, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0));
             ActiveGameObjects.Add(enemy);
             NormalEnemies.Add(enemy);
-            EnemyController enemy2 = EnemyFactory.CreateEnemy(new Vector2(800, 450), true, enemy);
+            EnemyController enemy2 = (EnemyController)EnemyFactory.CreateEnemy(EnemyFactory.Enemy.normal, new Vector2(800, 450), true, enemy, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0));
             ActiveGameObjects.Add(enemy2);
             NormalEnemies.Add(enemy2);
-            patrolenemy = EnemyFactory.CreatePatrolEnemy(new Vector2(100, 450), new Vector2(700, 450), new Vector2(450, 450), false, patrolenemy, new Vector2(150, 0));
+            patrolenemy = (PatrolEnemy)EnemyFactory.CreateEnemy(EnemyFactory.Enemy.patrol, new Vector2(100, 450), false, patrolenemy, new Vector2(450, 450), new Vector2(700, 450),  new Vector2(150, 0));
             ActiveGameObjects.Add(patrolenemy);
             PatrolEnemies.Add(patrolenemy);
         }
@@ -257,6 +261,7 @@ namespace Game
                 float DistanceY = Math.Abs(player.Transform.Position.Y - enemy.Transform.Position.Y);
                 float SumHalfHeights = player.Render.Size.Y / 2 + enemy.Render.Size.Y / 2;
 
+                //if player is in range, shoot
                 if (DistanceY <= SumHalfHeights)
                 {
                     if (enemy.IsFacingRight && enemy.Transform.Position.X < player.Transform.Position.X)

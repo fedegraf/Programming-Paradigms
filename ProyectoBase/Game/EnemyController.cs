@@ -3,28 +3,28 @@ using System.Collections.Generic;
 
 namespace Game
 {
-    public class EnemyController : GameObject, IDamageable
+    public class EnemyController : GameObject, IDamageable, IEnemy
     {
         private List<Animation> animations = new List<Animation>();
         private Animation currentAnimation;
         private static float ShootingCooldown, CoolingCurrentTime;
-        private int currentHealth, maxHealth;
-        private float speed;
+        private int currentHealth, maxHealth = 250;
+        private Vector2 speed;
         private bool isFacingRight;
         private float ShootAnimationLenght = 0.8f;
         private float CurrentShootAnimationTime;
 
-        public float Speed { get => speed; set => speed = value; }
+        public Vector2 Speed { get => speed; set => speed = value; }
         public int MaxHealth { get => maxHealth; set => maxHealth = value; }
         public bool IsFacingRight { get => isFacingRight; set => isFacingRight = value; }
         public bool isDestroyed => throw new NotImplementedException();
 
-        public EnemyController(float speed, int maxHealth, bool right,
-            Transform transform, Renderer render, Collider collider) : base(transform, render, collider)
+        public EnemyController(float speed, int maxHealth, bool right, Vector2 position, float rotation, Vector2 scale)
+        : base(position, rotation, scale, Engine.GetTexture("Textures/NormalEnemy/Right/Idle Animation/Idle_1.png"), "enemy")
         {
             CreateNormalEnemyAnimation();
             Engine.Debug("Creo animaciones");
-            Speed = speed;
+            Speed = new Vector2 (speed,0);
             MaxHealth = maxHealth;
             currentHealth = MaxHealth;
             IsFacingRight = right;
@@ -32,7 +32,6 @@ namespace Game
             Engine.Debug("Seteo animacion correcta");
             ShootingCooldown = 4.5f;
             CoolingCurrentTime = 0f;
-            collider.ThisGameObject = this;
         }
 
         event Action<IDamageable> IDamageable.OnDestroy
@@ -68,22 +67,8 @@ namespace Game
                     return animations[i];
                 }
             }
-            Engine.Debug($"No se encontro la animacion: {Id}");
+            Engine.Debug($"Animation not found: {Id}");
             return null;
-        }
-        public bool CheckCollisitionWithTiles(List<Tile> Tiles)
-        {
-            bool IsColliding = false;
-            for (int i = 0; i < Tiles.Count; i++)
-            {
-                IsColliding = CollisionsUtilities.isBoxingColliding(Transform.Position, Render.Size, Level.listOfTiles[i].Transform.Position,
-                    Level.listOfTiles[i].Render.Size);
-                if (IsColliding)
-                {
-                    return IsColliding;
-                }
-            }
-            return IsColliding;
         }
         public void Shoot()
         {
@@ -93,7 +78,7 @@ namespace Game
                 currentAnimation = isFacingRight ? GetAnimation("ShootRightAnimation") : GetAnimation("ShootLeftAnimation");
                 currentAnimation.Play();
                 Render.Size = new Vector2(currentAnimation.CurrentFrame.Width * Transform.Scale.X, Render.Size.Y);
-                Level.InstantiateBullet(Transform.Position, Render.Size, isFacingRight, "normal");
+                Level.InstantiateBullet(Transform.Position, Render.Size, isFacingRight, "normal", "EnemyBullet");
                 CoolingCurrentTime = 0;
             }
         }
@@ -106,15 +91,10 @@ namespace Game
                 Destroy();
             }
         }
-        public void OnDestroy()
-        {
-        }
-
         public void Destroy()
         {
             isActive = false;
             Transform.Position = new Vector2 (1800, 1000);
-         //   Level.ActiveGameObjects.Remove(this);
         }
         private List<Animation> CreateNormalEnemyAnimation()
         {
@@ -150,16 +130,6 @@ namespace Game
             Animation shootLeftAnimation = new Animation("ShootLeftAnimation", shootLeftFrames, 0.2f, false);
             animations.Add(shootLeftAnimation);
 
-
-            /*            List<Texture> walkframes = new List<Texture>();
-                        for (int i = 1; i <= 12; i++)
-                        {
-                            walkframes.Add(Engine.GetTexture($"Textures/Character/Run Animation/walk_{i}.png"));
-                        }
-                        Animation runAnimation = new Animation("runAnimation", walkframes, 0.1f, true);
-                        animations.Add(runAnimation);
-
-            */
             return animations;
         }
     }

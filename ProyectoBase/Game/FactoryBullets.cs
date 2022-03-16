@@ -14,35 +14,26 @@ namespace Game
             float speed;
             int damage;
             Vector2 scale = new Vector2(0.15f, 0.15f);
-            Texture texture;
-            Transform transformBullet = new Transform(Position, 0, scale);
-            Collider colliderBullet = new Collider("bullet");
             switch (bullet)
             {
                 case bullets.normal:
                     speed = 150f;
                     damage = 50;
-                    texture = Engine.GetTexture("Textures/Levels/Bullet.png");
-                    Renderer renderer = new Renderer(texture, transformBullet);
-                    NormalBullet myBullet = new NormalBullet(speed, damage, true, transformBullet, renderer, colliderBullet);
+                    NormalBullet myBullet = new NormalBullet(speed, damage, true, Position, 0, scale);
                     myBullet.Collider.ThisGameObject = myBullet;
                     return myBullet;
 
                 case bullets.explosive:
                     speed = 75f;
                     damage = 100;
-                    texture = Engine.GetTexture("Textures/Levels/explosive_bullet.png");
-                    Renderer explosive_renderer = new Renderer(texture, transformBullet);
-                    ExplosiveBullet myExplosiveBullet =  new ExplosiveBullet(speed, damage, false, transformBullet, explosive_renderer, colliderBullet);
+                    ExplosiveBullet myExplosiveBullet =  new ExplosiveBullet(speed, damage, false, Position, 0, scale);
                     myExplosiveBullet.Collider.ThisGameObject = myExplosiveBullet;
                     return myExplosiveBullet;
 
                 default:
                     speed = 150f;
                     damage = 50;
-                    texture = Engine.GetTexture("Textures/Levels/Bullet.png");
-                    Renderer default_renderer = new Renderer(texture, transformBullet);
-                    NormalBullet myDefaultBullet = new NormalBullet(speed, damage, true, transformBullet, default_renderer, colliderBullet);
+                    NormalBullet myDefaultBullet = new NormalBullet(speed, damage, true, Position, 0, scale);
                     myDefaultBullet.Collider.ThisGameObject = myDefaultBullet;
                     return myDefaultBullet;
             }

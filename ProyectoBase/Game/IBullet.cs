@@ -11,6 +11,6 @@
         void Update();
         void Deactivate();
         void Instantiate(Vector2 Position);
-        void Activate(Vector2 Position, bool right);
+        void Activate(Vector2 Position, bool right, string Layer);
     }
 }

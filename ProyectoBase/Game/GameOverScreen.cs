@@ -32,6 +32,7 @@ namespace Game
             quitButton.AssignButtons(playButton, playButton);
 
             SelectButton(playButton);
+            currentInputDelayTime = 0.3f;
 
         }
         public void Update()

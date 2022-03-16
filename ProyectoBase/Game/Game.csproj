@@ -46,6 +46,7 @@
     <Compile Include="Explosion.cs" />
     <Compile Include="FactoryBullets.cs" />
     <Compile Include="HealthItem.cs" />
+    <Compile Include="IEnemy.cs" />
     <Compile Include="Interface.cs" />
     <Compile Include="NormalBullet.cs" />
     <Compile Include="Button.cs" />
@@ -63,7 +64,6 @@
     <Compile Include="IScene.cs" />
     <Compile Include="Level.cs" />
     <Compile Include="MainMenu.cs" />
-    <Compile Include="Options.cs" />
     <Compile Include="PatrolEnemy.cs" />
     <Compile Include="PlayerController.cs" />
     <Compile Include="Pool.cs" />
@@ -432,6 +432,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Textures\NormalEnemy\Right\Shoot Animation\Shoot_4.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Textures\null_texture.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Textures\UI\ExplosiveGunOff.png">

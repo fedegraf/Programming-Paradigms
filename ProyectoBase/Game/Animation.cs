@@ -23,13 +23,13 @@ namespace Game
         public void Update()
         {
             currentAnimationTime += Time.DeltaTime;
-            
             if (currentAnimationTime >= speed)
             {
                 currentFrameIndex++;
                 currentAnimationTime = 0;
                 if (currentFrameIndex >= frames.Count)
                 {
+                    //if loop is enable, start animation again. If not, get stuck in the last frame
                     currentFrameIndex = isLoopingEnable ? 0 : frames.Count - 1;
                 }
             }
