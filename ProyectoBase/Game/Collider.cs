@@ -27,7 +27,7 @@ namespace Game
 
             foreach (GameObject gameobject in Level.ActiveGameObjects.ToList())
             {
-                //Check if every objec active in scene, except for yourself, is colliding with you
+                //Check if every object active in scene, except for yourself, is colliding with you
                 if (gameobject != thisGameObject)
                 {
                  bool IsColliding = CollisionsUtilities.isBoxingColliding(gameobject.Transform.Position, gameobject.Render.Size, 

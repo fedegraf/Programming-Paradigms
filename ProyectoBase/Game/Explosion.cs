@@ -14,6 +14,7 @@ namespace Game
         {
             Engine.Debug("explosion");
             List<Texture> idleFrames = new List<Texture>();
+            // Create Explotion Animation
             for (int i = 1; i <= 18; i++)
             {
                 idleFrames.Add(Engine.GetTexture($"Textures/Levels/Explosion/{i}.png"));
@@ -42,6 +43,7 @@ namespace Game
                     currentAnimationTime = 0;
                     if (currentFrameIndex <= 9)
                     {
+                        // Resize object with the pass of each animation frame
                         Transform.Scale += new Vector2(0.05f, 0.05f);
                         Render.Size = new Vector2(Render.RealWidht * Transform.Scale.X, Render.RealHeight * Transform.Scale.Y);
                         Render.OffSetX = Render.Size.X / 2;
@@ -53,6 +55,7 @@ namespace Game
                         isActive = false;
                     }
                 }
+                //Check wich objects are in range of the explotion
                 Collider.CheckCollitions();
             }
         }

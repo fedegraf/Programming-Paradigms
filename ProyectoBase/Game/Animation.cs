@@ -29,7 +29,7 @@ namespace Game
                 currentAnimationTime = 0;
                 if (currentFrameIndex >= frames.Count)
                 {
-                    //if loop is enable, start animation again. If not, get stuck in the last frame
+                    //if loop is enable, start animation again. If not, stop in the last frame
                     currentFrameIndex = isLoopingEnable ? 0 : frames.Count - 1;
                 }
             }
